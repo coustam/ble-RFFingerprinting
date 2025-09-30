@@ -1,0 +1,7 @@
+pyadi-iio
+numpy
+scipy
+matplotlib
+torch
+bluepy
+pandas
