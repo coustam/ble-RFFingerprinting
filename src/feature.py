@@ -23,12 +23,10 @@ class IQFeatureExtractor:
         self.sample_rate = sample_rate
 
     def _iq_imbalance(self, i, q):
-        """
-        Compute I/Q imbalance as the mean offset between I and Q components.
-        
+        """Compute I/Q imbalance as the mean offset between I and Q components.
+
         Returns:
-        --------
-        float: Mean I/Q offset in volts.
+            float: Mean I/Q offset in volts.
         """
         return np.mean(i) - np.mean(q)
 
