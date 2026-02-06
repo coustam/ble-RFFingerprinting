@@ -9,7 +9,7 @@ def ensure_dir(path):
         os.makedirs(path)
 
 def current_utc_timestamp():
-    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    return datetime.utcnow().isoformat() + "Z"
 
 def parse_timestamp(ts_str):
     return datetime.fromisoformat(ts_str.replace("Z", ""))
