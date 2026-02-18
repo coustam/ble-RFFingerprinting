@@ -25,8 +25,8 @@ class BLECapture:
         print(f"BLE: Starting logging  | Time: {current_utc_timestamp()}")
 
         def ble_on_detect(device, data):
+            timestamp = current_utc_timestamp()
             with open(self.log_path, "a") as f:
-                timestamp = current_utc_timestamp()
                 f.write(f"{timestamp},{device.address},{data.rssi}\n")
                 print(f"BLE: Got advertisement | Time: {timestamp} | Power: {data.rssi:3.4f}")
 
@@ -41,6 +41,7 @@ class BLECapture:
             bluez = scanner_args
         ):
             await self.stop_event.wait()
+            self.stop_event.clear()
 
         print(f"BLE: Ended logging     | Time: {current_utc_timestamp()}")
 
