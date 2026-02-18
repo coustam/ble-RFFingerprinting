@@ -2,7 +2,7 @@ import numpy as np
 import time
 import adi
 import asyncio
-import threading
+import multiprocessing
 
 from utils import current_utc_timestamp, ensure_dir
 
@@ -16,7 +16,7 @@ class PlutoSDRCapture:
         self.duration = duration
         ensure_dir(save_path)
         self.save_path = save_path
-        self.save_threads = []
+        self.save_processes = []
 
     def save(self, path, data):
         np.save(path,data)
@@ -36,32 +36,32 @@ class PlutoSDRCapture:
         while time.time() - start_time < self.duration:
             data = np.array(sdr.rx())
             timestamp = current_utc_timestamp()
-            self.save_threads.append(threading.Thread(target=self.save, args=(f"{self.save_path}/burst_{timestamp}.npy", data)))
-            self.save_threads[-1].start()
+            self.save_processes.append(multiprocessing.Process(target=self.save, args=(f"{self.save_path}/burst_{timestamp}.npy", data)))
+            self.save_processes[-1].start()
 
         print(f"SDR: Ended capture     | Time: {current_utc_timestamp()}")
 
-    def cleanup_threads(self):
-        dead_threads = []
-        for index in range(0, len(self.save_threads)):
-            if not self.save_threads[index].is_alive():
-                dead_threads.append(index)
-        for dead_thread in dead_threads[::-1]:
-            self.save_threads.pop(dead_thread)
+    def cleanup_processes(self):
+        dead_processes = []
+        for index in range(0, len(self.save_processes)):
+            if not self.save_processes[index].is_alive():
+                dead_processes.append(index)
+        for dead_thread in dead_processes[::-1]:
+            self.save_processes.pop(dead_thread)
 
     async def capture(self):
         ensure_dir(self.save_path)
-        capture_thread = threading.Thread(target=self._capture)
-        capture_thread.start()
+        capture_process = multiprocessing.Process(target=self._capture)
+        capture_process.start()
 
-        while capture_thread.is_alive():
-            self.cleanup_threads()
+        while capture_process.is_alive():
+            self.cleanup_processes()
             await asyncio.sleep(1.0)
 
         print(f"SDR: Saving...")
 
-        while len(self.save_threads):
-            self.cleanup_threads()
+        while len(self.save_processes):
+            self.cleanup_processes()
             await asyncio.sleep(1.0)
         
         print(f"SDR: Saving finished   | Time: {current_utc_timestamp()}")
