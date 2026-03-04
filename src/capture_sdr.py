@@ -8,10 +8,11 @@ from utils import current_utc_timestamp, ensure_dir
 
 class PlutoSDRCapture:
 
-    def __init__(self, center_freq, sample_rate, num_samples, duration, save_path):
+    def __init__(self, center_freq, sample_rate, num_samples, gain, duration, save_path):
         self.center_freq = center_freq
         self.sample_rate = sample_rate
         self.num_samples = num_samples
+        self.gain = gain
         self.running = False
         self.duration = duration
         ensure_dir(save_path)
@@ -28,6 +29,11 @@ class PlutoSDRCapture:
         sdr.sample_rate = int(self.sample_rate)
         sdr.rx_rf_bandwidth = int(self.sample_rate)
         sdr.rx_buffer_size = int(self.num_samples)
+        if self.gain != None:
+            sdr.gain_control_mode_chan0 = "manual"
+            sdr.rx_hardwaregain_chan0 = float(self.gain)
+        else:
+            sdr.gain_control_mode_chan0 = "fast_attack"
         sdr.rx() # Wait for the first sample before saving the start time
         start_time = time.time()
         
