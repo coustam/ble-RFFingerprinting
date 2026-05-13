@@ -20,7 +20,7 @@ def is_within_time_window(ts1, ts2, window_sec):
 
 def list_npys_by_timestamp(folder):
     files = sorted([f for f in os.listdir(folder) if f.endswith('.npy')])
-    return [(f, parse_timestamp(f.replace("burst_", "").replace(".npy", ""))) for f in files]
+    return [(f, parse_timestamp(f.split('_')[2].replace('.npy', '')), f.split('_')[1]) for f in files]
 
 def load_iq_burst(file_path):
     return np.load(file_path)
