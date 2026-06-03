@@ -1,19 +1,24 @@
-# Capturing and Extracting Features
+# 1. Capturing and Extracting Features
 The code in these notebooks allows for the capture and labelling of RF data as well as the extraction of features that can later be used for classification.
 Some more supporting code used is located in the [src](../src) folder.
+The [ble-rff-env](../ble-rff-env/) folder contains a python environment with the modules required to run the notebooks.
 
-## Overview
+The Notebooks are designed to be ran on a Raspberry Pi with the use of a Pluto SDR as well as a WD Elements hard disk, both connected to the Pi via USB.
+[install.sh](../install.sh) mounts the disk to the [disk](../disk) folder for easy access by the python programs.
+The Pluto SDR does not need to be mounted.
+
+## 1.1. Overview
 The proces is done in three steps:
 1. Data capture
 2. Preprocessing of data
 3. Feature extraction
 
-### Data Capture
+### 1.1.1. Data Capture
 The data capture is done by logging BLE advertisements received by the Raspberry Pi's built-in Bleutooth module while simultaneously sampling using a Pluto SDR.
 The advertisements as well as the samples recorded are timestamped, so that they could later be matched.
 As the code now actually decodes the BLE advertisements to extract the device addresses, the Pi's BLE log is no longer strictly needed.
 
-#### Asynchronous Code
+#### Asynchronous Code:
 Concurrent code was used to spread and reduce the load on the Raspberry Pi.
 
 Running the asynchronous capture spawns a process that reads data from the SDR as soon as its ready.
@@ -22,7 +27,7 @@ These save processes are left to run until they finish, when their reference is 
 
 The logging of the BLE advertisements captured by the Raspberry Pi is done in the main loop using BlueZ, which allows for the registration of a callback that is called once an advertisement is detected.
 
-### Preprocessing of Data
+### 1.1.2. Preprocessing of Data
 The saved SDR data bursts are decoded and the data stored in an array.
 Decoding takes place in the following steps:
 1. Transmissions are detected using a simple threshold, yielding a list of the beginnings and ends of all transmissions.
@@ -34,21 +39,21 @@ Decoding takes place in the following steps:
 
 The data recorded by the SDR can then be split up, saved, and labelled using the decoded device address.
 
-### Feature Extraction
+### 1.1.3. Feature Extraction
 The last step is to calculate different caracteristics of the labelled data that can then be used to train a model to differentiate devices.
 
-## BLE Beacons
+## 1.2. BLE Beacons
 The Sparkfun NanoBeacon IN100 can be used to generate sample advertisements to capture reference data.
 They can be configured to advertise with a given time interval using the [NanoBeacon Config Tool](https://inplay-tech.com/nanobeacon-config-tool).
 
 Some sample configs are saved under [S:\HTU\A1874_ISE\A1874_Projekte\2025_PRISM6G_Hasler\BT-Beacons\Configs](S:\HTU\A1874_ISE\A1874_Projekte\2025_PRISM6G_Hasler\BT-Beacons\Configs).
 
-### Adapter
+### 1.2.1. Adapter
 A USB to serial adapter is required to communicate with the beacons.
 As the available TTL-232R-3V3 converter outputs a 5V supply voltage despite 3.3V logic signals, a small PCB featuring a linear voltage regulator was created to step down the supply voltage.
-All other signals can be looped straight through.
+All other signals are passed straight through.
 
-### Nano Beacon Configurations
+### 1.2.2. Nano Beacon Configurations
 A collection of Configurations have been burned onto the NanoBeacons for easy testing.
 To tell them apart they have been labelled with their complete local name.
 
@@ -101,12 +106,9 @@ The beacons transmit the following data unwhitened:
 | MSB       | "                                                             |
 | *         | Data Configured in Config Tool                                |
 
-<a id="device-info-and-type"></a>[1]: Device info is 4: RFU=0, ChSel=0, TxAdd=1 (random address), RxAdd=0 and the advertising PDU type is 2: ADV_NONCONN_­IND.[^2]
-[^2]: [Bluetooth Specification Volume 6 Part B Section 2.3. Advertising physical channel PDU](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/low-energy-controller/link-layer-specification.html#:~:text=2.3.%20Advertising%20physical%20channel%20PDU)
+<a id="device-info-and-type"></a>[1]: Device info is 4: RFU=0, ChSel=0, TxAdd=1 (random address), RxAdd=0 and the advertising PDU type is 2: ADV_NONCONN_­IND. Details are described in [vol. 6 part B section 2.3 of the bluetooth specification](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/low-energy-controller/link-layer-specification.html#:~:text=2.3.%20Advertising%20physical%20channel%20PDU).
 
-
-The custom data configured in the NanoBeaconConfigTool is constructed as follows and whitened[^1] before transmission:
-[^1]: [Bluetooth Specification Volume 6 Part B Section 3.2. Data Whitening](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/low-energy-controller/link-layer-specification.html#:~:text=3.2.%20Data%20whitening)
+The custom data configured in the NanoBeaconConfigTool is constructed as follows and whitened as described in [vol. 6 part B section 3.2 of the bluetooth specification](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/low-energy-controller/link-layer-specification.html#:~:text=3.2.%20Data%20whitening) before transmission:
 
 |Byte| Value     |Description                        |
 |----|-----------|-----------------------------------|
@@ -142,7 +144,13 @@ The custom data configured in the NanoBeaconConfigTool is constructed as follows
 | 29 | random    |                                   |
 | 30 | random    |                                   |
 
-## Anechoic Chamber
+### 1.2.3. Hardware Setup
+The BLE beacons can be supplied by a voltage between 1.1 and 3.6 volts as per [their datasheet](https://cdn.sparkfun.com/assets/3/d/5/5/1/IN100-Datasheet.pdf).
+This allows them to be supplied by the Raspberry Pi's 3.3 V rail.
+The beacons are plugged into a breadboard with one breadboard per advertisement interval in order to make switching between different periods easy.
+The supplies of all beacons can then be connected to the Pi's IO header using a single connection.
+
+## 1.3. Anechoic Chamber
 Finding the advertisements transmitted by the Beacons in the SDR samples was nearly impossible as a large number of devices in the office advertise with a high frequency.
 For this reason the Arduino including the storage disk used to store the SDR samples as well as the SDR were put into the ESD / antenna test chamber of the institute for automation.
 The power supply and an ethernet cable were simply looped through the opening in the chamber.
