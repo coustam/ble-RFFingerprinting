@@ -7,7 +7,9 @@ The Notebooks are designed to be ran on a Raspberry Pi with the use of a PLUTO S
 [install.sh](../install.sh) mounts the disk to the [disk](../disk) folder for easy access by the python programs.
 The PLUTO SDR does not need to be mounted.
 
-The best way to connect to the Raspberry Pi is to use the ()
+The best way to connect to the Raspberry Pi is to use the [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) extension for Visual Studio Code.
+Thi Pi is available with the host name 10.84.2.50.
+This is much lighter and faster than using full desktop remote access with tools like RealVNC.
 
 ## 1. Overview
 The process is done in three steps:
