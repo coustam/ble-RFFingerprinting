@@ -175,3 +175,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+ble-rff-env/
+*.npy
+*.csv
+disk/
+.ipynb_checkpoints/
